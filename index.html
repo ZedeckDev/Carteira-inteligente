@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARTEIRA - Inicializador da Aplicação</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: rgba(17, 24, 39, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-main) 70%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .launcher-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 580px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .brand-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary), #a855f7);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #fff;
+            margin-bottom: 20px;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .status-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.checking {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .command-box {
+            background: #000;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-launch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.5);
+        }
+
+        .info-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 18px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="launcher-card">
+        <div class="brand-logo">
+            <i class="fa-solid fa-chart-pie"></i>
+        </div>
+
+        <h1>CARTEIRA</h1>
+        <p class="subtitle">Gestão & Balanceamento Inteligente de Investimentos em Rust</p>
+
+        <div class="status-box">
+            <div class="status-header">
+                <span style="font-weight: 600; font-size: 0.95rem;"><i class="fa-solid fa-server"></i> Servidor Local:</span>
+                <span class="status-badge" id="serverStatus"><i class="fa-solid fa-circle-notch fa-spin"></i> Verificando...</span>
+            </div>
+            
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 10px;">
+                Para iniciar a aplicação, execute o comando abaixo no terminal da pasta do projeto:
+            </p>
+            <div class="command-box">
+                <code>cargo run</code>
+                <i class="fa-solid fa-terminal"></i>
+            </div>
+        </div>
+
+        <a href="http://localhost:3000" id="launchBtn" class="btn-launch">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            <span>Abrir CARTEIRA (http://localhost:3000)</span>
+        </a>
+
+        <p class="info-text">
+            💡 Como o projeto é uma aplicação Fullstack de alta performance em Rust, as páginas são geradas dinamicamente pelo servidor Axum em <strong>http://localhost:3000</strong>.
+        </p>
+    </div>
+
+    <script>
+        // Tenta verificar se o servidor já está ativo e redireciona automaticamente
+        async function checkAndRedirect() {
+            const statusBadge = document.getElementById('serverStatus');
+            try {
+                const res = await fetch('http://localhost:3000/api/health', { method: 'GET', mode: 'no-cors' });
+                statusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> Servidor Ativo';
+                statusBadge.className = 'status-badge';
+                // Redirecionamento automático se aberto diretamente via arquivo local
+                if (window.location.protocol === 'file:') {
+                    window.location.href = 'http://localhost:3000';
+                }
+            } catch (e) {
+                statusBadge.innerHTML = '<i class="fa-solid fa-circle-pause"></i> Aguardando "cargo run"';
+                statusBadge.className = 'status-badge checking';
+            }
+        }
+        checkAndRedirect();
+        setInterval(checkAndRedirect, 3000);
+    </script>
+</body>
+</html>

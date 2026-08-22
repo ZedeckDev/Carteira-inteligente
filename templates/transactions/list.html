@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico de Transações{% endblock %}
+{% block nav_transactions %}active{% endblock %}
+{% block user_name %}{{ user_name }}{% endblock %}
+{% block page_title %}Extrato de Operações{% endblock %}
+{% block page_subtitle %}Histórico completo de compras, vendas e proventos recebidos{% endblock %}
+
+{% block content %}
+<div class="page-actions-bar">
+    <div class="filter-pills">
+        <button class="filter-btn active" data-tx-filter="all">Todas</button>
+        <button class="filter-btn" data-tx-filter="COMPRA">Compras</button>
+        <button class="filter-btn" data-tx-filter="VENDA">Vendas</button>
+        <button class="filter-btn" data-tx-filter="PROVENTO">Proventos (Dividendos/JCP/FII)</button>
+    </div>
+
+    <div class="actions-group">
+        <a href="/transactions/new" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            <span>Nova Operação</span>
+        </a>
+    </div>
+</div>
+
+<div class="table-section glass-card">
+    <div class="table-header">
+        <div class="table-header-title">
+            <h3><i class="fa-solid fa-receipt"></i> Todas as Transações</h3>
+            <span class="badge-count">{{ transactions.len() }} registros</span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table" id="transactionsTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Ativo</th>
+                    <th>Classe</th>
+                    <th class="text-right">Qtd</th>
+                    <th class="text-right">Preço Unitário</th>
+                    <th class="text-right">Taxas</th>
+                    <th class="text-right">Total Financeiro</th>
+                    <th>Notas</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if transactions.is_empty() %}
+                <tr>
+                    <td colspan="10" class="empty-table">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-receipt empty-icon"></i>
+                            <p>Nenhuma transação registrada ainda.</p>
+                            <a href="/transactions/new" class="btn btn-primary btn-sm">Registrar Primeira Operação</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                {% for tx in transactions %}
+                <tr data-tx-type="{{ tx.transaction_type }}">
+                    <td class="font-mono">{{ tx.transaction_date|fmt_date }}</td>
+                    <td>
+                        <span class="badge-tx badge-tx-{{ tx.transaction_type|slugify }}">
+                            {{ tx.transaction_type }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="asset-cell">
+                            <span class="asset-ticker">{{ tx.ticker }}</span>
+                            <span class="asset-name-small">{{ tx.asset_name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-class class-{{ tx.asset_class|slugify }}">{{ tx.asset_class }}</span>
+                    </td>
+                    <td class="text-right font-mono">{{ tx.quantity|fmt_decimal }}</td>
+                    <td class="text-right font-mono">R$ {{ tx.unit_price|fmt_currency }}</td>
+                    <td class="text-right font-mono">R$ {{ tx.fees|fmt_currency }}</td>
+                    <td class="text-right font-mono font-bold {% if tx.transaction_type == "COMPRA" %}text-primary{% else if tx.transaction_type == "VENDA" %}text-warning{% else %}text-success{% endif %}">
+                        R$ {{ tx.total_amount|fmt_currency }}
+                    </td>
+                    <td>
+                        <span class="tx-note-text">{% if let Some(n) = tx.notes %}{{ n }}{% else %}-{% endif %}</span>
+                    </td>
+                    <td class="text-center">
+                        <form action="/transactions/{{ tx.id }}/delete" method="POST" class="inline-form" onsubmit="return confirm('Deseja realmente excluir esta transação?');">
+                            <button type="submit" class="btn-icon btn-delete" title="Excluir Transação">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

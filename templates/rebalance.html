@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Aporte Inteligente & Rebalanceamento{% endblock %}
+{% block nav_rebalance %}active{% endblock %}
+{% block user_name %}{{ user_name }}{% endblock %}
+{% block page_title %}Calculadora de Aporte Inteligente{% endblock %}
+{% block page_subtitle %}Distribuição ótima de capital para alcançar suas metas de alocação sem vender ativos{% endblock %}
+
+{% block content %}
+<div class="rebalance-simulator-card glass-card">
+    <div class="simulator-header">
+        <div class="sim-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div class="sim-title">
+            <h3>Quanto você deseja aportar este mês?</h3>
+            <p>O algoritmo calculará a compra ideal para os ativos que estão mais distantes da meta ("aportar no que ficou para trás").</p>
+        </div>
+    </div>
+
+    <form action="/rebalance" method="GET" class="rebalance-input-form">
+        <div class="input-currency-wrapper">
+            <span class="currency-prefix">R$</span>
+            <input type="number" step="10" min="1" name="amount" class="rebalance-main-input" placeholder="2000,00" value="{{ amount_input }}" required autofocus>
+            <button type="submit" class="btn btn-primary btn-lg btn-glow">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Calcular Aporte</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if let Some(res) = rebalance_result %}
+<div class="rebalance-results-section">
+    <!-- Summary Metrics -->
+    <div class="dashboard-grid rebalance-summary-grid">
+        <div class="kpi-card glass-card">
+            <div class="kpi-icon-wrapper kpi-investido">
+                <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Novo Aporte</span>
+                <h3 class="kpi-value text-accent">R$ {{ res.contribution_amount|fmt_currency }}</h3>
+                <span class="kpi-subtext">Valor a ser distribuído</span>
+            </div>
+        </div>
+
+        <div class="kpi-card glass-card">
+            <div class="kpi-icon-wrapper kpi-patrimonio">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Patrimônio Atual</span>
+                <h3 class="kpi-value">R$ {{ res.total_portfolio_before|fmt_currency }}</h3>
+                <span class="kpi-subtext">Antes do aporte</span>
+            </div>
+        </div>
+
+        <div class="kpi-card glass-card">
+            <div class="kpi-icon-wrapper kpi-lucro">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Patrimônio Projetado</span>
+                <h3 class="kpi-value text-success">R$ {{ res.total_portfolio_after|fmt_currency }}</h3>
+                <span class="kpi-subtext">Após a execução das compras</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations Table -->
+    <div class="table-section glass-card">
+        <div class="table-header">
+            <div class="table-header-title">
+                <h3><i class="fa-solid fa-bullseye"></i> Recomendações de Compra</h3>
+                <span class="badge-count">Distribuição Ótima</span>
+            </div>
+            <div class="table-actions">
+                <button class="btn btn-secondary btn-sm" id="btnCopyOrders">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Copiar Resumo das Ordens</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Ativo</th>
+                        <th>Classe</th>
+                        <th class="text-right">Cotação</th>
+                        <th class="text-right">% Atual</th>
+                        <th class="text-right">% Meta</th>
+                        <th class="text-right">Distância</th>
+                        <th class="text-right">Qtd Sugerida</th>
+                        <th class="text-right highlight-col">Valor a Aportar</th>
+                        <th class="text-right">% Projetada</th>
+                        <th class="text-center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in res.recommendations %}
+                    <tr class="{% if rec.recommended_buy_amount > 0.0 %}row-buy-recommended{% endif %}">
+                        <td>
+                            <div class="asset-cell">
+                                <span class="asset-ticker">{{ rec.ticker }}</span>
+                                <span class="asset-name-small">{{ rec.name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-class class-{{ rec.asset_class|slugify }}">{{ rec.asset_class }}</span>
+                        </td>
+                        <td class="text-right font-mono">R$ {{ rec.current_price|fmt_currency }}</td>
+                        <td class="text-right font-mono">{{ rec.current_percentage|fmt_decimal }}%</td>
+                        <td class="text-right font-mono font-bold text-accent">{{ rec.target_percentage|fmt_decimal }}%</td>
+                        <td class="text-right">
+                            <span class="badge-pill {% if rec.distance_to_target_percentage > 0.0 %}badge-pill-warning{% else %}badge-pill-secondary{% endif %}">
+                                {% if rec.distance_to_target_percentage > 0.0 %}+{% endif %}{{ rec.distance_to_target_percentage|fmt_decimal }}%
+                            </span>
+                        </td>
+                        <td class="text-right font-mono font-bold {% if rec.recommended_quantity > 0.0 %}text-success{% endif %}">
+                            {{ rec.recommended_quantity|fmt_decimal }}
+                        </td>
+                        <td class="text-right font-mono font-bold highlight-col {% if rec.recommended_buy_amount > 0.0 %}text-success{% endif %}">
+                            R$ {{ rec.recommended_buy_amount|fmt_currency }}
+                        </td>
+                        <td class="text-right font-mono font-bold">{{ rec.expected_new_percentage|fmt_decimal }}%</td>
+                        <td class="text-center">
+                            {% if rec.recommended_quantity > 0.0 %}
+                            <a href="/transactions/new?asset_id={{ rec.asset_id }}&qty={{ rec.recommended_quantity }}&price={{ rec.current_price }}" class="btn btn-primary btn-xs">
+                                <i class="fa-solid fa-cart-shopping"></i> Comprar
+                            </a>
+                            {% else %}
+                            <span class="badge-pill badge-pill-secondary">Equilibrado</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const btnCopy = document.getElementById("btnCopyOrders");
+    if (btnCopy) {
+        btnCopy.addEventListener("click", () => {
+            let text = "📋 RESUMO DE ORDENS - APORTE INTELIGENTE:\n\n";
+            {% if let Some(res) = rebalance_result %}
+            {% for rec in res.recommendations %}
+            {% if rec.recommended_buy_amount > 0.0 %}
+            text += `• {{ rec.ticker }}: Comprar {{ rec.recommended_quantity|fmt_decimal }} un a R$ {{ rec.current_price|fmt_currency }} = R$ {{ rec.recommended_buy_amount|fmt_currency }}\n`;
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Resumo de ordens copiado para a área de transferência!");
+            });
+        });
+    }
+</script>
+{% endblock %}

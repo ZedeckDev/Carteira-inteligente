@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Operação{% endblock %}
+{% block nav_new_tx %}active{% endblock %}
+{% block user_name %}{{ user_name }}{% endblock %}
+{% block page_title %}Lançamento de Operação{% endblock %}
+{% block page_subtitle %}Registre compras, vendas ou proventos (dividendos, JCP, rendimentos){% endblock %}
+
+{% block content %}
+<div class="form-container-centered">
+    <div class="form-card glass-card">
+        {% if let Some(err) = error_message %}
+        <div class="alert alert-danger">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ err }}</span>
+        </div>
+        {% endif %}
+
+        <form action="/transactions/new" method="POST" class="standard-form" id="transactionForm">
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="asset_id"><i class="fa-solid fa-layer-group"></i> Selecione o Ativo *</label>
+                    <select id="asset_id" name="asset_id" class="form-control" required>
+                        <option value="">-- Selecione um Ativo --</option>
+                        {% for asset in assets %}
+                        <option value="{{ asset.id }}" data-price="{{ asset.current_price }}" {% if selected_asset_id == asset.id %}selected{% endif %}>
+                            {{ asset.ticker }} - {{ asset.name }} ({{ asset.asset_class }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-6">
+                    <label for="transaction_type"><i class="fa-solid fa-list-check"></i> Tipo de Operação *</label>
+                    <select id="transaction_type" name="transaction_type" class="form-control" required>
+                        <option value="COMPRA">Compra (Aporte)</option>
+                        <option value="VENDA">Venda (Desinvestimento)</option>
+                        <option value="DIVIDENDO">Dividendo</option>
+                        <option value="JCP">Juros sobre Capital Próprio (JCP)</option>
+                        <option value="RENDIMENTO">Rendimento de FII</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-4">
+                    <label for="quantity"><i class="fa-solid fa-calculator"></i> Quantidade *</label>
+                    <input type="number" step="any" min="0.000001" id="quantity" name="quantity" class="form-control" placeholder="Ex: 100" value="{{ prefill_qty }}" required>
+                </div>
+
+                <div class="form-group col-4">
+                    <label for="unit_price"><i class="fa-solid fa-brazilian-real-sign"></i> Preço Unitário (R$) *</label>
+                    <input type="number" step="any" min="0" id="unit_price" name="unit_price" class="form-control" placeholder="Ex: 38.50" value="{{ prefill_price }}" required>
+                </div>
+
+                <div class="form-group col-4">
+                    <label for="fees"><i class="fa-solid fa-receipt"></i> Taxas / Custos (R$)</label>
+                    <input type="number" step="any" min="0" id="fees" name="fees" class="form-control" placeholder="Ex: 0.00" value="0.00">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="transaction_date"><i class="fa-solid fa-calendar-day"></i> Data da Operação</label>
+                    <input type="date" id="transaction_date" name="transaction_date" class="form-control" value="{{ default_date }}">
+                </div>
+
+                <div class="form-group col-6">
+                    <label><i class="fa-solid fa-coins"></i> Total Calculado (R$)</label>
+                    <input type="text" id="calculatedTotal" class="form-control font-bold" readonly value="R$ 0,00">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes"><i class="fa-solid fa-comment-dots"></i> Observações / Corretora</label>
+                <input type="text" id="notes" name="notes" class="form-control" placeholder="Ex: Clear Corretora, Nota de Corretagem #1234">
+            </div>
+
+            <div class="form-actions">
+                <a href="/transactions" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i>
+                    <span>Registrar Operação</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const assetSelect = document.getElementById("asset_id");
+    const priceInput = document.getElementById("unit_price");
+    const qtyInput = document.getElementById("quantity");
+    const feesInput = document.getElementById("fees");
+    const totalDisplay = document.getElementById("calculatedTotal");
+
+    function updateTotal() {
+        const qty = parseFloat(qtyInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        const fees = parseFloat(feesInput.value) || 0;
+        const total = (qty * price) + fees;
+        totalDisplay.value = "R$ " + total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    assetSelect.addEventListener("change", (e) => {
+        const selected = assetSelect.options[assetSelect.selectedIndex];
+        const price = selected.getAttribute("data-price");
+        if (price && parseFloat(price) > 0 && !priceInput.value) {
+            priceInput.value = price;
+            updateTotal();
+        }
+    });
+
+    qtyInput.addEventListener("input", updateTotal);
+    priceInput.addEventListener("input", updateTotal);
+    feesInput.addEventListener("input", updateTotal);
+</script>
+{% endblock %}

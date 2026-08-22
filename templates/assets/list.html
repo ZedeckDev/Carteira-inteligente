@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Meus Ativos{% endblock %}
+{% block nav_assets %}active{% endblock %}
+{% block user_name %}{{ user_name }}{% endblock %}
+{% block page_title %}Catálogo de Ativos{% endblock %}
+{% block page_subtitle %}Gerencie os ativos da sua carteira, cotações e metas de alocação{% endblock %}
+
+{% block content %}
+<div class="page-actions-bar">
+    <div class="filter-pills">
+        <button class="filter-btn active" data-filter="all">Todos</button>
+        <button class="filter-btn" data-filter="Ações">Ações</button>
+        <button class="filter-btn" data-filter="FIIs">FIIs</button>
+        <button class="filter-btn" data-filter="Renda Fixa">Renda Fixa</button>
+        <button class="filter-btn" data-filter="ETFs">ETFs</button>
+        <button class="filter-btn" data-filter="Cripto">Cripto</button>
+    </div>
+
+    <div class="actions-group">
+        <a href="/assets/new" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i>
+            <span>Cadastrar Novo Ativo</span>
+        </a>
+    </div>
+</div>
+
+<div class="assets-grid" id="assetsGrid">
+    {% if assets.is_empty() %}
+    <div class="empty-state-full glass-card">
+        <i class="fa-solid fa-folder-open empty-icon"></i>
+        <h3>Nenhum ativo cadastrado</h3>
+        <p>Cadastre suas ações, fundos imobiliários, títulos de renda fixa ou criptomoedas para começar.</p>
+        <a href="/assets/new" class="btn btn-primary">Cadastrar Ativo Agora</a>
+    </div>
+    {% else %}
+    {% for asset in assets %}
+    <div class="asset-card glass-card" data-class="{{ asset.asset_class }}">
+        <div class="asset-card-header">
+            <div class="asset-identity">
+                <span class="badge-class class-{{ asset.asset_class|slugify }}">{{ asset.asset_class }}</span>
+                <h3 class="asset-ticker-title">{{ asset.ticker }}</h3>
+                <span class="asset-name-subtitle">{{ asset.name }}</span>
+            </div>
+            <div class="asset-dropdown-menu">
+                <a href="/assets/{{ asset.id }}/edit" class="btn-icon" title="Editar Ativo">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </a>
+                <form action="/assets/{{ asset.id }}/delete" method="POST" class="inline-form" onsubmit="return confirm('Tem certeza que deseja remover este ativo e todo seu histórico de transações?');">
+                    <button type="submit" class="btn-icon btn-delete" title="Excluir Ativo">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="asset-card-body">
+            <div class="asset-metric-row">
+                <span class="metric-label">Cotação Atual:</span>
+                <span class="metric-val font-bold">R$ {{ asset.current_price|fmt_currency }}</span>
+            </div>
+            <div class="asset-metric-row">
+                <span class="metric-label">Meta na Carteira:</span>
+                <span class="metric-val text-accent font-bold">{{ asset.target_percentage|fmt_decimal }}%</span>
+            </div>
+            <div class="asset-metric-row">
+                <span class="metric-label">Moeda:</span>
+                <span class="metric-val">{{ asset.currency }}</span>
+            </div>
+            {% if let Some(notes) = asset.notes %}
+            {% if !notes.is_empty() %}
+            <div class="asset-notes-box">
+                <i class="fa-regular fa-note-sticky"></i> {{ notes }}
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="asset-card-footer">
+            <a href="/transactions/new?asset_id={{ asset.id }}" class="btn btn-secondary btn-sm btn-block">
+                <i class="fa-solid fa-plus"></i>
+                <span>Lançar Operação</span>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

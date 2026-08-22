@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Carteira Inteligente{% endblock %} - Gestão de Investimentos</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body class="app-body">
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-chart-pie brand-icon"></i>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-name">CARTEIRA</span>
+                    <span class="brand-tag">Investimentos</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-title">PRINCIPAL</span>
+                    <a href="/dashboard" class="nav-item {% block nav_dashboard %}{% endblock %}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/rebalance" class="nav-item highlight-item {% block nav_rebalance %}{% endblock %}">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Aporte Inteligente</span>
+                        <span class="badge-new">PRO</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <span class="nav-section-title">CARTEIRA</span>
+                    <a href="/assets" class="nav-item {% block nav_assets %}{% endblock %}">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>Meus Ativos</span>
+                    </a>
+                    <a href="/transactions" class="nav-item {% block nav_transactions %}{% endblock %}">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Transações</span>
+                    </a>
+                    <a href="/transactions/new" class="nav-item {% block nav_new_tx %}{% endblock %}">
+                        <i class="fa-solid fa-circle-plus"></i>
+                        <span>Nova Operação</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-profile-badge">
+                    <div class="user-avatar">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="user-meta">
+                        <span class="user-name">{% block user_name %}Investidor{% endblock %}</span>
+                        <span class="user-status"><i class="fa-solid fa-circle status-dot"></i> Online</span>
+                    </div>
+                    <form action="/auth/logout" method="POST" class="logout-form">
+                        <button type="submit" class="btn-icon logout-btn" title="Sair da Conta">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-container">
+            <!-- Top Navbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-menu-toggle" id="sidebarToggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="page-header-title">
+                        <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+                        <p class="page-subtitle">{% block page_subtitle %}Visão geral da sua evolução patrimonial{% endblock %}</p>
+                    </div>
+                </div>
+
+                <div class="topbar-right">
+                    <!-- Quick Actions -->
+                    <a href="/transactions/new" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Lançar Operação</span>
+                    </a>
+                    <a href="/assets/new" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Novo Ativo</span>
+                    </a>
+
+                    <button class="theme-toggle" id="themeToggle" title="Alternar Modo Escuro/Claro">
+                        <i class="fa-solid fa-moon moon-icon"></i>
+                        <i class="fa-solid fa-sun sun-icon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Page Dynamic Content -->
+            <main class="content-body">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="app-footer">
+                <p>CARTEIRA • Gestão Inteligente de Investimentos • Desenvolvido com <strong>Rust</strong> & <strong>Axum</strong> • PostgreSQL & Askama</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

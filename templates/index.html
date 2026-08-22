@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARTEIRA - Gestão Inteligente de Investimentos</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <style>
+        .landing-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            max-width: 1280px;
+            margin: 0 auto;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .landing-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .landing-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .landing-hero {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 24px 60px;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--accent);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 24px;
+            letter-spacing: -1px;
+        }
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #38bdf8 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 760px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .features-section {
+            max-width: 1200px;
+            margin: 40px auto 80px;
+            padding: 0 24px;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .feature-card {
+            padding: 32px 24px;
+            border-radius: var(--radius-lg);
+            background: var(--bg-card);
+            backdrop-filter: var(--blur-glass);
+            border: 1px solid var(--border-color);
+            transition: var(--transition-smooth);
+            text-align: left;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-highlight);
+            box-shadow: var(--shadow-glow);
+        }
+        .feature-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(56, 189, 248, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .landing-footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.3rem; }
+            .landing-navbar { padding: 16px 20px; }
+        }
+    </style>
+</head>
+<body class="landing-body">
+    <!-- Navbar -->
+    <header class="landing-navbar">
+        <a href="/" class="landing-brand">
+            <div class="brand-logo">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <div class="brand-info">
+                <span class="brand-name">CARTEIRA</span>
+                <span class="brand-tag">Investimentos</span>
+            </div>
+        </a>
+
+        <div class="landing-nav-actions">
+            <button class="theme-toggle" id="themeToggle" title="Alternar Modo Escuro/Claro">
+                <i class="fa-solid fa-moon moon-icon"></i>
+                <i class="fa-solid fa-sun sun-icon"></i>
+            </button>
+
+            {% if let Some(user) = user %}
+            <a href="/dashboard" class="btn btn-primary">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>Acessar Dashboard ({{ user.name }})</span>
+            </a>
+            {% else %}
+            <a href="/login" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                <span>Entrar</span>
+            </a>
+            <a href="/register" class="btn btn-primary btn-glow">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Criar Conta</span>
+            </a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="landing-hero">
+        <div class="hero-badge">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Plataforma Completa & Inteligente em Rust</span>
+        </div>
+
+        <h1 class="hero-title">
+            Domine seus Investimentos com a <br>
+            <span class="gradient-text">CARTEIRA</span>
+        </h1>
+
+        <p class="hero-subtitle">
+            Acompanhe seu patrimônio em tempo real, controle proventos de Ações e FIIs, e utilize o algoritmo de 
+            <strong>Aporte Inteligente</strong> para rebalancear seus ativos sem precisar vender nada.
+        </p>
+
+        <div class="hero-buttons">
+            {% if let Some(user) = user %}
+            <a href="/dashboard" class="btn btn-primary btn-lg btn-glow">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>Ir para o Meu Dashboard</span>
+            </a>
+            <a href="/rebalance" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Simular Aporte Inteligente</span>
+            </a>
+            {% else %}
+            <a href="/register" class="btn btn-primary btn-lg btn-glow">
+                <i class="fa-solid fa-rocket"></i>
+                <span>Começar Agora Gratuitamente</span>
+            </a>
+            <a href="/login" class="btn btn-secondary btn-lg">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>Fazer Login</span>
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="features-section">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h3>Aporte Inteligente</h3>
+                <p>O algoritmo calcula a compra ideal nos ativos que ficaram para trás da sua meta percentual, equilibrando seu portfólio sem gerar custos desnecessários.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <h3>Multi-Classes de Ativos</h3>
+                <p>Gerencie Ações nacionais, Fundos Imobiliários (FIIs), Renda Fixa (Tesouro/CDB/LCI), ETFs, Criptomoedas e Ativos Internacionais em um único painel.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <h3>Proventos & Yield on Cost</h3>
+                <p>Acompanhe dividendos, JCP e rendimentos recebidos, com histórico completo e métricas precisas de rentabilidade acumulada.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3>Segurança & Performance</h3>
+                <p>Construído em Rust e Axum com hashing de senhas via Argon2id e cookies seguros, oferecendo carregamento instantâneo e privacidade total.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <p>CARTEIRA • Gestão Inteligente de Investimentos • Desenvolvido com <strong>Rust</strong> & <strong>Axum</strong> • PostgreSQL & Askama</p>
+    </footer>
+
+    <!-- App JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

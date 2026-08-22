@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Editar Ativo{% else %}Novo Ativo{% endif %}{% endblock %}
+{% block nav_assets %}active{% endblock %}
+{% block user_name %}{{ user_name }}{% endblock %}
+{% block page_title %}{% if is_edit %}Editar Ativo: {{ asset.ticker }}{% else %}Cadastrar Novo Ativo{% endif %}{% endblock %}
+{% block page_subtitle %}Defina os dados, classe, cotação e objetivo percentual deste ativo{% endblock %}
+
+{% block content %}
+<div class="form-container-centered">
+    <div class="form-card glass-card">
+        {% if let Some(err) = error_message %}
+        <div class="alert alert-danger">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ err }}</span>
+        </div>
+        {% endif %}
+
+        <form action="{% if is_edit %}/assets/{{ asset.id }}/edit{% else %}/assets/new{% endif %}" method="POST" class="standard-form">
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="ticker"><i class="fa-solid fa-tag"></i> Código / Ticker *</label>
+                    <input type="text" id="ticker" name="ticker" class="form-control text-uppercase" placeholder="Ex: PETR4, HGLG11, BTC" value="{% if is_edit %}{{ asset.ticker }}{% endif %}" required autofocus>
+                    <small class="form-hint">Código de negociação na B3 ou identificador</small>
+                </div>
+
+                <div class="form-group col-6">
+                    <label for="asset_class"><i class="fa-solid fa-layer-group"></i> Classe do Ativo *</label>
+                    <select id="asset_class" name="asset_class" class="form-control" required>
+                        <option value="Ações" {% if is_edit %}{% if asset.asset_class == "Ações" %}selected{% endif %}{% endif %}>Ações (Brasil)</option>
+                        <option value="FIIs" {% if is_edit %}{% if asset.asset_class == "FIIs" %}selected{% endif %}{% endif %}>FIIs (Fundos Imobiliários)</option>
+                        <option value="Renda Fixa" {% if is_edit %}{% if asset.asset_class == "Renda Fixa" %}selected{% endif %}{% endif %}>Renda Fixa (Tesouro / CDB / LCI)</option>
+                        <option value="ETFs" {% if is_edit %}{% if asset.asset_class == "ETFs" %}selected{% endif %}{% endif %}>ETFs (Índices)</option>
+                        <option value="Cripto" {% if is_edit %}{% if asset.asset_class == "Cripto" %}selected{% endif %}{% endif %}>Criptomoedas</option>
+                        <option value="Internacional" {% if is_edit %}{% if asset.asset_class == "Internacional" %}selected{% endif %}{% endif %}>Internacional (Stocks / REITs)</option>
+                        <option value="Outros" {% if is_edit %}{% if asset.asset_class == "Outros" %}selected{% endif %}{% endif %}>Outros</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="name"><i class="fa-solid fa-font"></i> Nome do Ativo / Razão Social *</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Ex: Petróleo Brasileiro S.A. Petrobras" value="{% if is_edit %}{{ asset.name }}{% endif %}" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="current_price"><i class="fa-solid fa-brazilian-real-sign"></i> Cotação Atual (R$)</label>
+                    <input type="number" step="any" min="0" id="current_price" name="current_price" class="form-control" placeholder="Ex: 38.50" value="{% if is_edit %}{{ asset.current_price }}{% endif %}">
+                    <small class="form-hint">Deixe em branco para buscar automaticamente</small>
+                </div>
+
+                <div class="form-group col-6">
+                    <label for="target_percentage"><i class="fa-solid fa-bullseye"></i> Meta na Carteira (%)</label>
+                    <input type="number" step="0.1" min="0" max="100" id="target_percentage" name="target_percentage" class="form-control" placeholder="Ex: 10.0" value="{% if is_edit %}{{ asset.target_percentage }}{% else %}0.0{% endif %}">
+                    <small class="form-hint">Percentual ideal desejado para o Aporte Inteligente</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes"><i class="fa-solid fa-comment-dots"></i> Observações / Tese de Investimento</label>
+                <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Anotações sobre a tese deste ativo...">{% if is_edit %}{% if let Some(n) = asset.notes %}{{ n }}{% endif %}{% endif %}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="/assets" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>{% if is_edit %}Salvar Alterações{% else %}Cadastrar Ativo{% endif %}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

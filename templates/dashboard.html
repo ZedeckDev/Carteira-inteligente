@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard da Carteira{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block user_name %}{{ user_name }}{% endblock %}
+{% block page_title %}Visão Geral dos Investimentos{% endblock %}
+{% block page_subtitle %}Acompanhamento do patrimônio, rentabilidade e alocação da sua carteira{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Top KPI Cards -->
+    <div class="kpi-card glass-card">
+        <div class="kpi-icon-wrapper kpi-patrimonio">
+            <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="kpi-data">
+            <span class="kpi-label">Patrimônio Total</span>
+            <h3 class="kpi-value">R$ {{ portfolio.current_total_value|fmt_currency }}</h3>
+            <span class="kpi-subtext">Total acumulado atualizado</span>
+        </div>
+    </div>
+
+    <div class="kpi-card glass-card">
+        <div class="kpi-icon-wrapper kpi-investido">
+            <i class="fa-solid fa-money-bill-transfer"></i>
+        </div>
+        <div class="kpi-data">
+            <span class="kpi-label">Total Aplicado</span>
+            <h3 class="kpi-value">R$ {{ portfolio.total_invested|fmt_currency }}</h3>
+            <span class="kpi-subtext">Custo de aquisição</span>
+        </div>
+    </div>
+
+    <div class="kpi-card glass-card">
+        <div class="kpi-icon-wrapper {% if portfolio.total_profit_loss >= 0.0 %}kpi-lucro{% else %}kpi-prejuizo{% endif %}">
+            <i class="fa-solid {% if portfolio.total_profit_loss >= 0.0 %}fa-arrow-trend-up{% else %}fa-arrow-trend-down{% endif %}"></i>
+        </div>
+        <div class="kpi-data">
+            <span class="kpi-label">Lucro / Prejuízo</span>
+            <h3 class="kpi-value {% if portfolio.total_profit_loss >= 0.0 %}text-success{% else %}text-danger{% endif %}">
+                {% if portfolio.total_profit_loss >= 0.0 %}+{% endif %}R$ {{ portfolio.total_profit_loss|fmt_currency }}
+            </h3>
+            <span class="kpi-badge {% if portfolio.profit_loss_percentage >= 0.0 %}badge-success{% else %}badge-danger{% endif %}">
+                {% if portfolio.profit_loss_percentage >= 0.0 %}+{% endif %}{{ portfolio.profit_loss_percentage|fmt_decimal }}%
+            </span>
+        </div>
+    </div>
+
+    <div class="kpi-card glass-card">
+        <div class="kpi-icon-wrapper kpi-proventos">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+        <div class="kpi-data">
+            <span class="kpi-label">Proventos Recebidos</span>
+            <h3 class="kpi-value text-accent">R$ {{ portfolio.total_dividends_received|fmt_currency }}</h3>
+            <span class="kpi-subtext">Yield on Cost: <strong>{{ portfolio.yield_on_cost|fmt_decimal }}%</strong></span>
+        </div>
+    </div>
+</div>
+
+<!-- Smart Rebalance CTA Banner -->
+<div class="rebalance-banner glass-card">
+    <div class="banner-content">
+        <div class="banner-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div class="banner-text">
+            <h3>Calculadora de Aporte Inteligente</h3>
+            <p>Descubra exatamente onde alocar seu próximo investimento para balancear sua carteira sem precisar vender nada.</p>
+        </div>
+    </div>
+    <div class="banner-action">
+        <a href="/rebalance" class="btn btn-primary btn-glow">
+            <i class="fa-solid fa-calculator"></i>
+            <span>Simular Aporte</span>
+        </a>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="charts-row">
+    <div class="chart-card glass-card">
+        <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-pie"></i> Alocação por Classe de Ativos</h3>
+            <span class="chart-subtitle">Distribuição percentual atual</span>
+        </div>
+        <div class="chart-body doughnut-chart-container">
+            <canvas id="allocationChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card glass-card">
+        <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-bar"></i> Alocação por Ativos</h3>
+            <span class="chart-subtitle">Maiores participações no portfólio</span>
+        </div>
+        <div class="chart-body bar-chart-container">
+            <canvas id="assetsBarChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Asset Positions Table -->
+<div class="table-section glass-card">
+    <div class="table-header">
+        <div class="table-header-title">
+            <h3><i class="fa-solid fa-table-list"></i> Posições da Carteira</h3>
+            <span class="badge-count">{{ portfolio.positions.len() }} ativos em custódia</span>
+        </div>
+        <div class="table-actions">
+            <form action="/api/quotes/sync" method="POST" class="inline-form">
+                <button type="submit" class="btn btn-secondary btn-sm" title="Atualizar cotações com mercado">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Atualizar Cotações</span>
+                </button>
+            </form>
+            <a href="/assets/new" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span>Novo Ativo</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Ativo</th>
+                    <th>Classe</th>
+                    <th class="text-right">Qtd</th>
+                    <th class="text-right">Preço Médio</th>
+                    <th class="text-right">Cotação Atual</th>
+                    <th class="text-right">Total Aplicado</th>
+                    <th class="text-right">Saldo Atual</th>
+                    <th class="text-right">Resultado (R$)</th>
+                    <th class="text-right">Rentabilidade</th>
+                    <th class="text-right">% Carteira</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if portfolio.positions.is_empty() %}
+                <tr>
+                    <td colspan="11" class="empty-table">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-chart-line empty-icon"></i>
+                            <p>Nenhum ativo cadastrado ainda na sua carteira.</p>
+                            <a href="/assets/new" class="btn btn-primary btn-sm">Cadastrar Primeiro Ativo</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                {% for pos in portfolio.positions %}
+                <tr>
+                    <td>
+                        <div class="asset-cell">
+                            <span class="asset-ticker">{{ pos.ticker }}</span>
+                            <span class="asset-name-small">{{ pos.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-class class-{{ pos.asset_class|slugify }}">{{ pos.asset_class }}</span>
+                    </td>
+                    <td class="text-right font-mono">{{ pos.quantity|fmt_decimal }}</td>
+                    <td class="text-right font-mono">R$ {{ pos.average_price|fmt_currency }}</td>
+                    <td class="text-right font-mono font-bold">R$ {{ pos.current_price|fmt_currency }}</td>
+                    <td class="text-right font-mono">R$ {{ pos.total_invested|fmt_currency }}</td>
+                    <td class="text-right font-mono font-bold">R$ {{ pos.current_total_value|fmt_currency }}</td>
+                    <td class="text-right font-mono {% if pos.profit_loss >= 0.0 %}text-success{% else %}text-danger{% endif %} font-bold">
+                        {% if pos.profit_loss >= 0.0 %}+{% endif %}R$ {{ pos.profit_loss|fmt_currency }}
+                    </td>
+                    <td class="text-right">
+                        <span class="badge-pill {% if pos.profit_loss_percentage >= 0.0 %}badge-pill-success{% else %}badge-pill-danger{% endif %}">
+                            {% if pos.profit_loss_percentage >= 0.0 %}+{% endif %}{{ pos.profit_loss_percentage|fmt_decimal }}%
+                        </span>
+                    </td>
+                    <td class="text-right font-mono font-bold">{{ pos.current_weight_percentage|fmt_decimal }}%</td>
+                    <td class="text-center">
+                        <div class="action-buttons">
+                            <a href="/transactions/new?asset_id={{ pos.asset_id }}" class="btn-icon btn-action-add" title="Adicionar Operação">
+                                <i class="fa-solid fa-plus"></i>
+                            </a>
+                            <a href="/assets/{{ pos.asset_id }}/edit" class="btn-icon btn-action-edit" title="Editar Ativo">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Dados para os gráficos injetados de forma segura
+    const classesData = [
+        {% for cls in portfolio.classes %}
+        {% if cls.current_total_value > 0.0 %}
+        {
+            label: "{{ cls.asset_class }}",
+            value: {{ cls.current_total_value }},
+            percentage: {{ cls.current_weight_percentage }}
+        },
+        {% endif %}
+        {% endfor %}
+    ];
+
+    const assetsData = [
+        {% for pos in portfolio.positions %}
+        {% if pos.current_total_value > 0.0 %}
+        {
+            ticker: "{{ pos.ticker }}",
+            value: {{ pos.current_total_value }},
+            percentage: {{ pos.current_weight_percentage }}
+        },
+        {% endif %}
+        {% endfor %}
+    ];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initDashboardCharts(classesData, assetsData);
+    });
+</script>
+<script src="/static/js/charts.js"></script>
+{% endblock %}
