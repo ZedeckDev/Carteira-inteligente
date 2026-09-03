@@ -1,0 +1,5 @@
+.text-success { color: #34d399; } .text-danger { color: #fb7185; } .text-accent { color: #38bdf8; }
+.font-bold { font-weight: 700; } .font-mono { font-family: monospace; }
+.badge-pill, .badge-class { display: inline-block; padding: .2rem .45rem; border-radius: .5rem; background: rgba(148,163,184,.2); }
+.action-buttons { display: flex; gap: .4rem; justify-content: center; }
+.btn-icon { color: var(--text); } .empty-table { text-align: center; }
