@@ -54,7 +54,7 @@ impl DbPool {
         match self {
             DbPool::Postgres(pool) => {
                 info!("Executando migrações no PostgreSQL...");
-                sqlx::query(
+                sqlx::raw_sql(
                     r#"
                     CREATE TABLE IF NOT EXISTS users (
                         id VARCHAR(36) PRIMARY KEY,
